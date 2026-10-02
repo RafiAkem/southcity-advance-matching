@@ -24,6 +24,7 @@ class Advance:
     desc: str
     amount: int
     po_codes: set[str] = field(default_factory=set)
+    note: str = ""  # WP column I, copied unchanged to the result sheet
 
 
 @dataclass
@@ -96,7 +97,8 @@ def load_wp(src) -> list[Advance]:
         if pd.isna(a) or pd.isna(d):
             continue  # second header row / blanks
         _, codes = normalize(c)
-        out.append(Advance(i + 1, _day(a), str(b).strip(), str(c).strip(), int(d), codes))
+        note = df.iloc[i, 8] if df.shape[1] > 8 and pd.notna(df.iloc[i, 8]) else ""
+        out.append(Advance(i + 1, _day(a), str(b).strip(), str(c).strip(), int(d), codes, str(note)))
     return out
 
 
