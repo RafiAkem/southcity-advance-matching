@@ -1,0 +1,7 @@
+pandas
+xlrd
+openpyxl
+gspread
+openai
+streamlit
+python-dotenv
