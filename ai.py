@@ -19,9 +19,6 @@ load_dotenv()
 
 AI_STUDIO = "https://generativelanguage.googleapis.com/v1beta/openai/"
 
-# The SDK class is reached via getattr so this file carries no vendor literal.
-Client = getattr(openai, "Open" + "AI")
-
 SYSTEM = """Kamu adalah asisten akuntansi. Tulis Executive Summary dalam Bahasa Indonesia, maksimal 200 kata.
 Gunakan HANYA angka dari JSON. Jangan menghitung, menjumlah, atau membulatkan angka baru.
 Format angka Rupiah dengan titik ribuan (contoh: Rp 570.406.879).
@@ -73,7 +70,7 @@ def provider(model: str | None) -> tuple[str, str, str]:
 def summarize(data: dict, model: str | None = None) -> str:
     """Return the summary text. Raises on API error; the caller shows it and continues (§8)."""
     base_url, api_key, model_id = provider(model)
-    client = Client(api_key=api_key, base_url=base_url)
+    client = openai.Client(api_key=api_key, base_url=base_url)
     r = client.chat.completions.create(
         model=model_id,
         temperature=0.2,
