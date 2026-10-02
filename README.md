@@ -47,6 +47,10 @@ sheets.push(adv, matches, unmatched, summary, "2026-04-30 17:00")
 | `app.py` | Streamlit dashboard |
 | `test_match.py` | Plain-assert acceptance test for SPEC §7 |
 
+`data/` holds the two source files and the brief that SouthCity sent with this
+test, kept here so the pipeline runs end to end without any setup. They are the
+inputs of the exercise only; no other data from the company is in this repo.
+
 ## Matching logic
 
 Rule-based: regex + token similarity. No LLM in the matching, so the result is the same on every run and every match can be explained.
