@@ -1,5 +1,6 @@
 """Write Working_Paper_Result and Dashboard to Google Sheets (SPEC §3.1, §3.2)."""
 import json
+import re
 import os
 
 import gspread
@@ -48,7 +49,7 @@ def dash_grid(advances, matches, unmatched, summary: str, generated_at: str) -> 
         ["Unsettled", f"=COUNTBLANK({g})"],
         [],
         ["AI Executive Summary", f"Generated: {generated_at}" if generated_at else ""],
-        [summary or "(not generated)"],
+        [re.sub(r"\*\*|^#+\s*", "", summary, flags=re.M) or "(not generated)"],  # plain text cell
         [],
         ["Exceptions (saldo ≠ 0)"],
         ["Row", "Description", "Amount", "Realization", "Saldo", "Status"],
