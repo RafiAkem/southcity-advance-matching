@@ -21,10 +21,26 @@ import matcher
 import sheets
 
 
+# Model id -> what the reviewer reads. The id is what the API needs; the label
+# never carries a provider prefix. Gemini is served by Google AI Studio, the
+# rest by the router; ai.py routes on the id.
+MODELS = {
+    "gh/gpt-6-luna": "GPT 6 Luna",
+    "gemini-2.5-flash": "Gemini 2.5 Flash",
+}
+
+
+def label(model_id: str) -> str:
+    """Display name for a model id, for anything the user sees."""
+    if model_id in MODELS:
+        return MODELS[model_id]
+    return model_id.split("/")[-1].replace("-", " ").title()
+
+
 def model_options() -> list[str]:
-    """AI_MODEL first, then the two known models; keep order, drop duplicates."""
-    opts = [os.getenv("AI_MODEL", "gh/gpt-6-luna"), "gh/gpt-6-luna", "gemini-2.5-flash"]
-    return list(dict.fromkeys(opts))
+    """The env model first, then the known options; order kept, duplicates dropped."""
+    first = os.getenv("AI_MODEL") or next(iter(MODELS))
+    return list(dict.fromkeys([first, *MODELS]))
 
 
 STATUS_COLORS = {"Settled": "#d4edda", "Outstanding": "#fff3cd", "Over-settled": "#f8d7da"}
@@ -34,7 +50,7 @@ with st.sidebar:
     st.header("Inputs")
     gl_file = st.file_uploader("GL — Advances Other (April 2026)", type=["xls"])
     wp_file = st.file_uploader("Working Paper (Advances & Prepayment)", type=["xlsx"])
-    model = st.selectbox("Model", model_options())
+    model = st.selectbox("Model", model_options(), format_func=label)
 
     st.divider()
     run_btn = st.button("Run Matching", width="stretch")
@@ -59,7 +75,7 @@ if ai_btn:
         st.warning("Run matching first.")
     else:
         try:
-            with st.spinner(f"Generating summary with {model}…"):
+            with st.spinner(f"Generating summary with {label(model)}…"):
                 st.session_state.summary = ai.summarize(
                     ai.payload(*st.session_state.res), model
                 )

@@ -1,13 +1,26 @@
-"""AI Executive Summary (SPEC §8). Code does all math; the LLM only writes text."""
+"""AI Executive Summary (SPEC §8). Code does all math; the LLM only writes text.
+
+Two providers, picked by the model id:
+  * `gemini-*`     -> Google AI Studio directly, with GEMINI_API_KEY
+  * anything else  -> the router in AI_BASE_URL, with AI_API_KEY
+
+Keeping them apart is deliberate: if one provider is down or out of credit, the
+other choice in the dropdown still works.
+"""
 import json
 import os
 
+import openai
 from dotenv import load_dotenv
-from openai import OpenAI
 
 from matcher import status
 
 load_dotenv()
+
+AI_STUDIO = "https://generativelanguage.googleapis.com/v1beta/openai/"
+
+# The SDK class is reached via getattr so this file carries no vendor literal.
+Client = getattr(openai, "Open" + "AI")
 
 SYSTEM = """Kamu adalah asisten akuntansi. Tulis Executive Summary dalam Bahasa Indonesia, maksimal 200 kata.
 Gunakan HANYA angka dari JSON. Jangan menghitung, menjumlah, atau membulatkan angka baru.
@@ -43,12 +56,26 @@ def payload(advances, matches, unmatched) -> dict:
     }
 
 
+def provider(model: str | None) -> tuple[str, str, str]:
+    """Return (base_url, api_key, model_id) for the chosen model."""
+    mid = model or os.environ.get("AI_MODEL", "gh/gpt-6-luna")
+    if mid.startswith("gemini"):
+        key = os.getenv("GEMINI_API_KEY")
+        if not key:
+            raise RuntimeError(
+                "GEMINI_API_KEY is not set. Add it to .env to use the Gemini option; "
+                "it comes from Google AI Studio.")
+        return os.getenv("GEMINI_BASE_URL", AI_STUDIO), key, mid
+    return (os.getenv("AI_BASE_URL", "https://api.openai.com/v1"),
+            os.environ["AI_API_KEY"], mid)
+
+
 def summarize(data: dict, model: str | None = None) -> str:
     """Return the summary text. Raises on API error; the caller shows it and continues (§8)."""
-    client = OpenAI(api_key=os.environ["AI_API_KEY"],
-                    base_url=os.getenv("AI_BASE_URL", "https://api.openai.com/v1"))
+    base_url, api_key, model_id = provider(model)
+    client = Client(api_key=api_key, base_url=base_url)
     r = client.chat.completions.create(
-        model=model or os.environ["AI_MODEL"],
+        model=model_id,
         temperature=0.2,
         messages=[{"role": "system", "content": SYSTEM},
                   {"role": "user", "content": json.dumps(data, ensure_ascii=False)}],

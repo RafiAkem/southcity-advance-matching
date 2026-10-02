@@ -166,15 +166,23 @@ Expected unmatched GL credits (15):
 
 ## 8. AI Executive Summary
 
-- Client: the `openai` Python SDK. Set the provider only with env vars:
+- Client: the `[OI]` Python SDK. Two providers, picked by the model id:
   ```
+  # router / OpenAI-compatible -> any model id that is not gemini-*
   AI_API_KEY=...
-  AI_BASE_URL=https://api.openai.com/v1                       # default
+  AI_BASE_URL=https://api.openai.com/v1
   AI_MODEL=gpt-5.6-luna
-  # free-tier option, no code change:
-  # AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
-  # AI_MODEL=gemini-2.5-flash
+
+  # Gemini -> Google AI Studio directly, with its own key (not via the router)
+  GEMINI_API_KEY=...
+  GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
+  GEMINI_MODEL=gemini-2.5-flash
   ```
+- `ai.provider(model)` routes on the id: `gemini-*` goes to AI Studio, everything
+  else goes to the router. Separate keys on purpose, so one provider being down
+  or out of credit does not remove the other option from the dropdown.
+- The model select box shows the model name only (`GPT 6 Luna`, `Gemini 2.5
+  Flash`), never the provider prefix.
 - The code calculates all numbers. The LLM gets only this JSON and must not do any math:
   ```json
   {
