@@ -4,6 +4,7 @@ Take-home test, Junior AI & Automation Engineer, SouthCity IT.
 Python tool that matches April 2026 GL credits to the Advances Working Paper, fills columns E–H, writes an AI Executive Summary, and pushes everything to Google Sheets. Full requirements: [SPEC.md](SPEC.md).
 
 - Google Sheet (view): https://docs.google.com/spreadsheets/d/1S-WdI8w8uxqCaZFxh7H_PAvYexSPDbH5DjW3V67ISdc
+- Streamlit dashboard (live): https://southcity.rafiakem.tech — the three buttons in the sidebar run the whole pipeline
 - Sheets: `Working_Paper_Result` (columns A–I, H and TOTAL as formulas) and `Dashboard` (KPI formulas, exceptions, unmatched credits, AI summary)
 
 ## Install
